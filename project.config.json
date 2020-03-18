@@ -7,9 +7,11 @@
 		"minified": false
 	},
 	"compileType": "miniprogram",
-	"appid": "touristappid",
+	"appid": "wx266f2c226e6bbf56",
 	"projectname": "larabbs-weapp",
 	"miniprogramRoot": "dist/",
 	"libVersion": "2.10.3",
+	"simulatorType": "wechat",
+	"simulatorPluginLibVersion": {},
 	"condition": {}
 }

@@ -67,10 +67,14 @@ export default class extends wepy.app {
   constructor () {
     super()
     this.use('requestfix')
+    //promisi是异步编程的一种解决方案 比回调和事件 更强大
+    this.use('promisify')
   }
 
   onLaunch() {
-
+    wepy.login().then(res=>{
+      console.log('登录结果',res)
+    })
   }
 
 }
