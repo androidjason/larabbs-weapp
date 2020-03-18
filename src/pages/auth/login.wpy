@@ -1,0 +1,128 @@
+<style lang="less">
+.login-wrap{
+  margin-top:50px;
+}
+</style>
+
+<template>
+  <view class="page">
+    <view class="page__bd login-wrap">
+      <view class="weui-toptips weui-toptips_warn" wx:if="{{ error }}">{{ errorMessage }}</view>
+
+      <view class="weui-cells__title">Larabbs 用户登录</view>
+      <view class="weui-cells weui-cells_after-title">
+        <view class="weui-cell weui-cell_input {{ error ? 'weui-cell_warn' : ''}}">
+          <view class="weui-cell__hd">
+            <view class="weui-label">用户名</view>
+          </view>
+          <view class="weui-cell__bd">
+            <input class="weui-input" placeholder="手机号或邮箱" @input="bindUsernameInput" />
+          </view>
+          <view wx:if="{{ error }}" class="weui-cell__ft">
+            <icon type="warn" size="23" color="#E64340"></icon>
+          </view>
+        </view>
+        <view class="weui-cell weui-cell_input {{ error ? 'weui-cell_warn' : ''}}">
+          <view class="weui-cell__hd">
+            <view class="weui-label">密码</view>
+          </view>
+          <view class="weui-cell__bd">
+            <input class="weui-input" placeholder="输入密码" type="password" @input="bindPasswordInput" />
+          </view>
+          <view wx:if="{{ error }}" class="weui-cell__ft">
+            <icon type="warn" size="23" color="#E64340"></icon>
+          </view>
+        </view>
+      </view>
+
+      <view class="weui-btn-area">
+        <button class="weui-btn" type="primary" @tap="submit">登录</button>
+      </view>
+    </view>
+  </view>
+</template>
+
+<script>
+  import wepy from 'wepy'
+  import api from '@/utils/api'
+
+  export default class Login extends wepy.page {
+    config = {
+      navigationBarTitleText:'登录'
+    }
+    data = {
+      username:'',
+      password:'',
+      error:false, //是否有错
+      errorMessage:''//错误信息
+    }
+    methods = {
+      //绑定用户名变化
+      bindUsernameInput(e){
+        this.username = e.detail.value
+      }
+      //绑定密码变化
+      bindPasswordInput(e){
+        this.password = e.detail.value
+      }
+      //表单提交
+      async submit(){
+        //提交时重置错误
+        this.error = false
+        this.errorMessage = ''
+
+        if (!this.username||!this.password) {
+          this.errorMessage = '请输入账户名和密码'
+          return
+        }
+
+        //获取用户名和密码
+        let params = {
+          username:this.username,
+          password:this.password
+        }
+
+        //网络请求
+        try{
+          //调用封装好的login
+          let authResponse = await api.login(params) //todo 为什么都用let定义变量
+
+          //返回401 说明用户名或密码错误
+          if (authResponse.statusCode === 401) {
+            this.error = true
+            this.errorMessage = authResponse.data.message
+            this.$apply() //todo 这是什么
+          }
+
+          //201 登录成功 返回上一页
+          if (authResponse.statusCode === 201) {
+            wepy.navigateBack()
+          }
+        }catch(err){
+            wepy.showModal({
+              title:'提示',
+              content:'服务器错误'
+            })
+        }
+      }
+
+      //页面打开事件
+      async onShow(){
+        try{
+          //打开页面自动调用一次登录 如果通过code能拿到用户信息 说明用户登录过 无需再输入账号密码登录
+          let authResponse = await api.login()
+
+          //成功则返回上一页
+          if (authResponse.statusCode === 201) {
+            wepy.navigateBack()
+          }
+        }catch(err){
+          wepy.showModal({
+            title:'提示',
+            content:'接口错误'
+          })
+        }
+      }
+    }
+  }
+</script>

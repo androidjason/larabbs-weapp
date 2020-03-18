@@ -3,13 +3,70 @@
 </style>
 
 <template>
-  <view class="container">
-  我的页面
+  <view class="page">
+    <view wx:if="{{ loggedIn }}">
+      已登录 name: {{ userInfo.name }}
+      <button type="warn" @tap="logout">退出登录</button>
+    </view>
+    <view wx:else>
+      <navigator class="weui-cell weui-cell_access" url='/pages/auth/login'>
+        <view class="weui-cell__bd">未登录</view>
+        <view class="weui-cell__ft weui-cell__ft_in-access"></view>
+      </navigator>
+    </view>
   </view>
 </template>
 
 <script>
   import wepy from 'wepy'
+  import api from '@/utils/api'
 
-  export default class User extends wepy.page {}
+  export default class User extends wepy.page {
+    config = {
+      navigationBarTitleText:'我的'
+    }
+
+    data = {
+    loggedIn:false,
+    userInfo:null
+    }
+
+    methods = {
+      async logout(e){
+        //网络请求的方法 try catch
+        try{
+        //请求退出接口
+        let logoutResponse = await api.logout()
+
+        if (logoutResponse.statusCode === 204) {
+        //退出成功后 修改本页面数据
+          this.loggedIn = false
+          this.userInfo = null
+          this.$apply()
+        }
+        }catch(e){
+          console.log(e)
+          wepy.showModal({
+            title:'提示',
+            content：'接口错误'
+          })
+        }
+      }
+    }
+
+    async onShow(){
+      //获得token
+      let accessToken = wepy.getStorageSync('access_token')
+
+      //如果有数据 则表示已登录
+      if (accessToken) {
+        //请求接口 获得userInfo信息
+        let userResponse = await api.authRequest('user')
+        this.userInfo = userResponse.data
+        this.loggedIn = true
+        //自定义方法中想更新data中的值 一定要手动调用 this.$apply()
+        this.$apply()
+      }
+    }
+  }
 </script>
