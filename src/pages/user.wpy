@@ -48,7 +48,7 @@
           console.log(e)
           wepy.showModal({
             title:'提示',
-            content：'接口错误'
+            content:'接口错误'
           })
         }
       }
